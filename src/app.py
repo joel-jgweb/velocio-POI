@@ -49,17 +49,26 @@ def upload():
         pois = []
         for element in data.get("elements", []):
             if element['type'] == 'node':
-                if is_poi_near_trace(element['lat'], element['lon'], trace_line, max_distance_m=radius):
-                    pois.append({
-                        'lat': element['lat'],
-                        'lon': element['lon'],
-                        'name': element.get('tags', {}).get('name', ''),
-                        'type': element.get('tags', {}).get('amenity', element.get('tags', {}).get('tourism', 'POI'))
-                    })
+                tags = element.get('tags', {})
+                # Détermination du type OSM
+                poi_type = tags.get('amenity') or tags.get('tourism') or tags.get('shop') or 'POI'
+                # Recherche du label convivial (français) basée sur clé+valeur
+                label = poi_type
+                for t in ALL_POI_TYPES:
+                    if t["key"] in tags and t["value"] == tags.get(t["key"]):
+                        label = t["label"]
+                        break
+                pois.append({
+                    'lat': element['lat'],
+                    'lon': element['lon'],
+                    'name': tags.get('name', ''),
+                    'type': poi_type,
+                    'label': label
+                })
         pois = enrich_poi_address(pois)
         global global_pois
         global_pois = pois
-        export_csv(pois)
+        export_csv(pois) # label est bien traduit
         map_path = generate_map(points, pois)
         return redirect(url_for("results"))
     return render_template("upload.html", poi_types=ALL_POI_TYPES, tags=tags, radius=radius)

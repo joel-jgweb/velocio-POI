@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Velocio_POI - Accueil</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f7f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+            padding: 38px 36px 28px 36px;
+        }
+        h1 {
+            color: #2352a0;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+        form {
+            margin-top: 30px;
+        }
+        .poi-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 32px;
+            margin-top: 16px;
+            margin-bottom: 14px;
+        }
+        .poi-item {
+            padding: 6px 0;
+        }
+        .actions {
+            margin-top: 22px;
+            text-align: center;
+        }
+        .btn {
+            background: #2352a0;
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 22px;
+            font-size: 1em;
+            text-decoration: none;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(35,82,160,0.13);
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #14335e;
+        }
+        label {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sélectionnez les types de POI</h1>
+        <form method="POST">
+            <div class="poi-list">
+                {% for poi in poi_types %}
+                <div class="poi-item">
+                    <label>
+                        <input type="checkbox" name="poi_types" value="{{ loop.index0 }}">
+                        {{ poi.label }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            <div>
+                Rayon autour de la trace (mètres) :
+                <input type="number" name="radius" value="200" min="50" max="1000" step="10" style="width: 80px;">
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn">Valider</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

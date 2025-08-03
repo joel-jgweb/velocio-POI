@@ -6,7 +6,7 @@ def export_csv(pois):
     with open(path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=["name", "type", "lat", "lon", "address", "city", "description"]
+            fieldnames=["name", "type", "label", "lat", "lon", "address", "city", "description"]
         )
         writer.writeheader()
         for poi in pois:
