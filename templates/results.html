@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Velocio_POI - Résultats</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f7f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 700px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+            padding: 36px 32px 28px 32px;
+        }
+        h1 {
+            color: #2352a0;
+            text-align: center;
+            margin-bottom: 22px;
+        }
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        .results-table th, .results-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #e2e2e2;
+            text-align: left;
+        }
+        .results-table th {
+            background: #eef3fb;
+            color: #2352a0;
+        }
+        .results-table tr:hover td {
+            background: #f5f8ff;
+        }
+        .no-results {
+            color: #a00;
+            text-align: center;
+            margin-top: 18px;
+            font-size: 1.08em;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 18px;
+            color: #2352a0;
+            text-decoration: none;
+            font-size: 1.09em;
+            border-radius: 8px;
+            padding: 8px 18px;
+            background: #eef3fb;
+            transition: background 0.17s;
+        }
+        .back-link:hover {
+            background: #dbe5f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Résultats</h1>
+        {% if results and results|length > 0 %}
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Type</th>
+                        <th>Distance (m)</th>
+                        <th>Coordonnées</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for result in results %}
+                    <tr>
+                        <td>{{ result.name }}</td>
+                        <td>{{ result.type }}</td>
+                        <td>{{ result.distance }}</td>
+                        <td>{{ result.coordinates }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-results">
+                Aucun résultat trouvé pour les critères sélectionnés.
+            </div>
+        {% endif %}
+        <div style="text-align:center;">
+            <a href="{{ url_for('poi_selection') }}" class="back-link">Retour à la sélection</a>
+        </div>
+    </div>
+</body>
+</html>
