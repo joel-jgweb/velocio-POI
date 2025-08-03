@@ -39,6 +39,20 @@
         .results-table tr:hover td {
             background: #f5f8ff;
         }
+        .results-list {
+            margin-bottom: 16px;
+        }
+        .result-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e2e2;
+            background: #fff;
+            margin-bottom: 4px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .result-item:hover {
+            background: #f5f8ff;
+        }
         .no-results {
             color: #a00;
             text-align: center;
@@ -64,27 +78,14 @@
 <body>
     <div class="container">
         <h1>Résultats</h1>
-        {% if results and results|length > 0 %}
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        <th>Nom</th>
-                        <th>Type</th>
-                        <th>Distance (m)</th>
-                        <th>Coordonnées</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for result in results %}
-                    <tr>
-                        <td>{{ result.name }}</td>
-                        <td>{{ result.label }}</td>
-                        <td>{{ result.distance }}</td>
-                        <td>{{ result.coordinates }}</td>
-                    </tr>
+        {% if pois and pois|length > 0 %}
+            <div class="results-list">
+                {% for poi in pois %}
+                    <div class="result-item">
+                        <strong>{{ poi.label }}</strong> — {{ poi.name or "Sans nom" }} — {{ poi.address or "Adresse inconnue" }} — {{ poi.city or "Ville inconnue" }}
+                    </div>
                 {% endfor %}
-                </tbody>
-            </table>
+            </div>
         {% else %}
             <div class="no-results">
                 Aucun résultat trouvé pour les critères sélectionnés.

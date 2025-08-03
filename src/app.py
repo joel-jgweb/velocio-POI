@@ -8,7 +8,7 @@ from enrich import enrich_poi_address
 from exporter import export_csv
 from map import generate_map
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='../templates')
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -21,7 +21,7 @@ def home():
         tags_indices = request.form.getlist("poi_types")
         radius = int(request.form.get("radius", "200"))
         return redirect(url_for("upload", tags=",".join(tags_indices), radius=radius))
-    return render_template("home.html", poi_types=ALL_POI_TYPES)
+    return render_template("poi_selection.html", poi_types=ALL_POI_TYPES)
 
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
@@ -50,11 +50,24 @@ def upload():
         for element in data.get("elements", []):
             if element['type'] == 'node':
                 if is_poi_near_trace(element['lat'], element['lon'], trace_line, max_distance_m=radius):
+                    # Extract OSM type
+                    osm_type = element.get('tags', {}).get('amenity', element.get('tags', {}).get('tourism', element.get('tags', {}).get('shop', 'POI')))
+                    
+                    # Find corresponding label from selected_tags
+                    label = 'POI'  # default
+                    for poi_type in selected_tags:
+                        if (poi_type['key'] == 'amenity' and element.get('tags', {}).get('amenity') == poi_type['value']) or \
+                           (poi_type['key'] == 'tourism' and element.get('tags', {}).get('tourism') == poi_type['value']) or \
+                           (poi_type['key'] == 'shop' and element.get('tags', {}).get('shop') == poi_type['value']):
+                            label = poi_type['label']
+                            break
+                    
                     pois.append({
                         'lat': element['lat'],
                         'lon': element['lon'],
                         'name': element.get('tags', {}).get('name', ''),
-                        'type': element.get('tags', {}).get('amenity', element.get('tags', {}).get('tourism', 'POI'))
+                        'type': osm_type,
+                        'label': label
                     })
         pois = enrich_poi_address(pois)
         global global_pois

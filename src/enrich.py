@@ -20,9 +20,9 @@ def enrich_poi_address(pois):
                 addr = response.json().get('address', {})
                 p['address'] = addr.get('road') or addr.get('pedestrian') or addr.get('residential') or addr.get('footway') or "Inconnue"
                 p['city'] = addr.get('city') or addr.get('town') or addr.get('village') or addr.get('hamlet') or 'Inconnue'
-                p['description'] = f"{p.get('type','POI')}: {p.get('name','Sans nom')} - {p['address']}, {p['city']}"
+                p['description'] = f"{p.get('label', p.get('type', 'POI'))}: {p.get('name','Sans nom')} - {p['address']}, {p['city']}"
             else:
-                p['description'] = f"{p.get('type','POI')}: {p.get('name','Sans nom')} - (adresse non disponible)"
+                p['description'] = f"{p.get('label', p.get('type', 'POI'))}: {p.get('name','Sans nom')} - (adresse non disponible)"
         except Exception:
-            p['description'] = f"{p.get('type','POI')}: {p.get('name','Sans nom')} - (erreur réseau)"
+            p['description'] = f"{p.get('label', p.get('type', 'POI'))}: {p.get('name','Sans nom')} - (erreur réseau)"
     return pois
