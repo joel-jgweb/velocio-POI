@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Velocio_POI - Sélection des POI</title>
+</head>
+<body>
+    <h1>Velocio_POI</h1>
+    <form method="post">
+        <p>Sélectionnez les types de POI :</p>
+        {% for poi in poi_types %}
+            <input type="checkbox" name="poi_types" value="{{ loop.index0 }}"> {{ poi.label }}<br>
+        {% endfor %}
+        <p>Rayon de recherche (mètres) :</p>
+        <input type="number" name="radius" value="200" min="50" max="5000">
+        <br><br>
+        <input type="submit" value="Continuer">
+    </form>
+</body>
+</html>

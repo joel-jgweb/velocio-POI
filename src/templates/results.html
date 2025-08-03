@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Velocio_POI - Résultats</title>
+</head>
+<body>
+    <h1>Résultats</h1>
+    <a href="{{ url_for('download_csv') }}">Télécharger le CSV</a> |
+    <a href="{{ url_for('map_html') }}" target="_blank">Voir la carte</a>
+    <h2>POI trouvés</h2>
+    <ul>
+    {% for poi in pois %}
+        <li>{{ poi.description }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
