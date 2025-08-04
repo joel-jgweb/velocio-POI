@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, send_file
 import os
+import sys
 from config import ALL_POI_TYPES, OUTPUT_DIR
 from gpx_utils import parse_gpx
 from overpass import build_query, query_overpass
@@ -130,4 +131,5 @@ def map_html():
         return f.read()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    debug_mode = os.environ.get("VELOCIO_DEBUG", "False") == "True"
+    app.run(debug=debug_mode)
