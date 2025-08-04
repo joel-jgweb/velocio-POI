@@ -29,6 +29,7 @@ def upload():
     tags = request.args.get("tags", "")
     radius = int(request.args.get("radius", "200"))
     selected_tags = [ALL_POI_TYPES[int(i)] for i in tags.split(",") if i.isdigit()]
+    selected_labels = [t["label"] for t in selected_tags]
     if request.method == "POST":
         if "gpxfile" not in request.files:
             return "No file", 400
@@ -58,11 +59,11 @@ def upload():
         pois = []
         for element in data.get("elements", []):
             if element['type'] == 'node':
-                tags = element.get('tags', {})
-                poi_type = tags.get('amenity') or tags.get('tourism') or tags.get('shop') or 'POI'
+                tags_elem = element.get('tags', {})
+                poi_type = tags_elem.get('amenity') or tags_elem.get('tourism') or tags_elem.get('shop') or 'POI'
                 label = poi_type
                 for t in ALL_POI_TYPES:
-                    if t["key"] in tags and t["value"] == tags.get(t["key"]):
+                    if t["key"] in tags_elem and t["value"] == tags_elem.get(t["key"]):
                         label = t["label"]
                         break
                 lat = element['lat']
@@ -71,7 +72,7 @@ def upload():
                     pois.append({
                         'lat': lat,
                         'lon': lon,
-                        'name': tags.get('name', ''),
+                        'name': tags_elem.get('name', ''),
                         'type': poi_type,
                         'label': label
                     })
@@ -82,13 +83,25 @@ def upload():
         map_path = generate_map(points, pois)
         export_gpx(points, pois)
         return redirect(url_for("results"))
-    return render_template("upload.html", poi_types=ALL_POI_TYPES, tags=tags, radius=radius)
+    return render_template(
+        "upload.html",
+        poi_types=ALL_POI_TYPES,
+        tags=tags,
+        radius=radius,
+        selected_labels=selected_labels
+    )
 
 @app.route("/results")
 def results():
     csv_path = OUTPUT_DIR / "pois.csv"
     map_path = OUTPUT_DIR / "carte.html"
-    return render_template("results.html", csv_file=str(csv_path), map_html=str(map_path), pois=global_pois, trace=global_trace)
+    return render_template(
+        "results.html",
+        csv_file=str(csv_path),
+        map_html=str(map_path),
+        pois=global_pois,
+        trace=global_trace
+    )
 
 @app.route("/download_csv")
 def download_csv():
