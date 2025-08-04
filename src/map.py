@@ -8,7 +8,7 @@ def generate_map(trace, pois):
         folium.Marker(
             location=[poi["lat"], poi["lon"]],
             popup=poi.get("description", ""),
-            tooltip=poi.get("name", "")
+            tooltip=poi.get("description", "")  # <-- c'est ici le changement
         ).add_to(m)
     map_path = OUTPUT_DIR / "carte.html"
     m.save(map_path)

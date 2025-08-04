@@ -7,6 +7,7 @@ from poi import trace_to_linestring, is_poi_near_trace
 from enrich import enrich_poi_address
 from exporter import export_csv
 from map import generate_map
+from exporter import export_gpx
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
@@ -39,10 +40,18 @@ def upload():
         points = parse_gpx(file_path)
         global global_trace
         global_trace = points
-        # Calcul bbox autour de la trace
+
+        # Calcul bbox autour de la trace élargie du rayon choisi
         lats = [p[0] for p in points]
         lons = [p[1] for p in points]
-        bbox = [min(lats), min(lons), max(lats), max(lons)]
+        radius_deg = radius / 111000
+        bbox = [
+            min(lats) - radius_deg,
+            min(lons) - radius_deg,
+            max(lats) + radius_deg,
+            max(lons) + radius_deg
+        ]
+
         query = build_query(selected_tags, bbox)
         data = query_overpass(query)
         trace_line = trace_to_linestring(points)
@@ -50,26 +59,28 @@ def upload():
         for element in data.get("elements", []):
             if element['type'] == 'node':
                 tags = element.get('tags', {})
-                # Détermination du type OSM
                 poi_type = tags.get('amenity') or tags.get('tourism') or tags.get('shop') or 'POI'
-                # Recherche du label convivial (français) basée sur clé+valeur
                 label = poi_type
                 for t in ALL_POI_TYPES:
                     if t["key"] in tags and t["value"] == tags.get(t["key"]):
                         label = t["label"]
                         break
-                pois.append({
-                    'lat': element['lat'],
-                    'lon': element['lon'],
-                    'name': tags.get('name', ''),
-                    'type': poi_type,
-                    'label': label
-                })
+                lat = element['lat']
+                lon = element['lon']
+                if is_poi_near_trace(lat, lon, trace_line, radius):
+                    pois.append({
+                        'lat': lat,
+                        'lon': lon,
+                        'name': tags.get('name', ''),
+                        'type': poi_type,
+                        'label': label
+                    })
         pois = enrich_poi_address(pois)
         global global_pois
         global_pois = pois
-        export_csv(pois) # label est bien traduit
+        export_csv(pois)
         map_path = generate_map(points, pois)
+        export_gpx(points, pois)
         return redirect(url_for("results"))
     return render_template("upload.html", poi_types=ALL_POI_TYPES, tags=tags, radius=radius)
 
@@ -82,6 +93,14 @@ def results():
 @app.route("/download_csv")
 def download_csv():
     path = OUTPUT_DIR / "pois.csv"
+    return send_file(path, as_attachment=True)
+
+@app.route("/download_gpx")
+def download_gpx():
+    path = OUTPUT_DIR / "resultats_poi.gpx"
+    # On régénère le GPX au cas où il n'existe pas encore
+    if not path.exists() and global_trace and global_pois:
+        export_gpx(global_trace, global_pois)
     return send_file(path, as_attachment=True)
 
 @app.route("/map")
