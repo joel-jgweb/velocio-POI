@@ -2,13 +2,64 @@
 <html>
 <head>
     <title>Velocio_POI - Import GPX</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f7f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 400px;
+            margin: 80px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+            padding: 34px 30px 28px 30px;
+        }
+        h1 {
+            color: #2352a0;
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 1.32em;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input[type="file"] {
+            padding: 6px;
+            font-size: 1em;
+            margin-bottom: 22px;
+            background: #f7f7fa;
+            border: 1px solid #c2c2c2;
+            border-radius: 8px;
+            width: 100%;
+        }
+        input[type="submit"] {
+            background: #2352a0;
+            color: #fff;
+            border: none;
+            padding: 11px 34px;
+            border-radius: 22px;
+            font-size: 1.09em;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(35,82,160,0.13);
+            transition: background 0.2s;
+        }
+        input[type="submit"]:hover {
+            background: #14335e;
+        }
+    </style>
 </head>
 <body>
-    <h1>Importez votre trace GPX</h1>
-    <form method="post" enctype="multipart/form-data">
-        <input type="file" name="gpxfile" accept=".gpx" required>
-        <br><br>
-        <input type="submit" value="Lancer la recherche">
-    </form>
+    <div class="container">
+        <h1>Importez votre trace GPX</h1>
+        <form method="post" enctype="multipart/form-data">
+            <input type="file" name="gpxfile" accept=".gpx" required>
+            <input type="submit" value="Lancer la recherche">
+        </form>
+    </div>
 </body>
 </html>
