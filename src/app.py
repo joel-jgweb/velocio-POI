@@ -58,7 +58,16 @@ def upload():
         trace_line = trace_to_linestring(points)
         pois = []
         for element in data.get("elements", []):
-            if element['type'] == 'node':
+            # Prise en compte des node, way, relation
+            if element['type'] in ['node', 'way', 'relation']:
+                if element['type'] == 'node':
+                    lat = element['lat']
+                    lon = element['lon']
+                elif 'center' in element:
+                    lat = element['center']['lat']
+                    lon = element['center']['lon']
+                else:
+                    continue  # skip si pas de coordonnées
                 tags_elem = element.get('tags', {})
                 poi_type = tags_elem.get('amenity') or tags_elem.get('tourism') or tags_elem.get('shop') or 'POI'
                 label = poi_type
@@ -66,8 +75,6 @@ def upload():
                     if t["key"] in tags_elem and t["value"] == tags_elem.get(t["key"]):
                         label = t["label"]
                         break
-                lat = element['lat']
-                lon = element['lon']
                 if is_poi_near_trace(lat, lon, trace_line, radius):
                     pois.append({
                         'lat': lat,

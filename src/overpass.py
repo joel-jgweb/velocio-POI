@@ -1,27 +1,35 @@
 import requests
-from config import OVERPASS_URLS, USER_AGENT
-from cache import load_cache, save_cache
 
-def build_query(tags, bbox):
-    query = "[out:json][timeout:25];("
-    for tag in tags:
-        query += f' node["{tag["key"]}"="{tag["value"]}"]({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});'
-    query += ");out body;>;out skel qt;"
+OVERPASS_API_URL = "https://overpass-api.de/api/interpreter"
+
+def build_query(selected_tags, bbox):
+    """
+    Construit une requête Overpass pour les tags sélectionnés et la bbox.
+    Inclut les node, way et relation pour chaque type de POI.
+    """
+    query_parts = []
+    for tag in selected_tags:
+        # Ajoute node, way et relation pour chaque type de POI
+        query_parts.append(
+            f'node[{tag["key"]}={tag["value"]}]({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});'
+        )
+        query_parts.append(
+            f'way[{tag["key"]}={tag["value"]}]({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});'
+        )
+        query_parts.append(
+            f'relation[{tag["key"]}={tag["value"]}]({bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]});'
+        )
+    query = (
+        "[out:json];("
+        + "".join(query_parts)
+        + ");out center;"
+    )
     return query
 
-def query_overpass(query, force_refresh=False):
-    if not force_refresh:
-        cached = load_cache(query)
-        if cached is not None:
-            return cached
-    headers = {"User-Agent": USER_AGENT, "Content-Type": "application/x-www-form-urlencoded"}
-    for url in OVERPASS_URLS:
-        try:
-            resp = requests.post(url, data=query.encode(), headers=headers, timeout=30)
-            if resp.status_code == 200:
-                data = resp.json()
-                save_cache(query, data)
-                return data
-        except Exception:
-            continue
-    raise ConnectionError("Overpass API unavailable.")
+def query_overpass(query):
+    """
+    Envoie la requête Overpass et retourne le résultat en JSON.
+    """
+    response = requests.post(OVERPASS_API_URL, data={'data': query})
+    response.raise_for_status()
+    return response.json()
