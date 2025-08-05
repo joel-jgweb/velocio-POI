@@ -7,10 +7,12 @@ import sys
 import subprocess
 import time
 import os
+from pathlib import Path
 
 PORT = 5000
 FLASK_PATH = "server.py"
-LOGO_PATH = "static/logo.png"
+LOGO_PATH = Path(__file__).parent / "static" / "logo.png"
+
 flask_process = None
 
 def start_flask():
@@ -34,12 +36,11 @@ def on_close():
 
 root = tk.Tk()
 root.title("Velocio T&S - Démarrage")
-
 main_frame = ttk.Frame(root, padding=18)
 main_frame.pack(fill="both", expand=True)
 
 # --- Logo ---
-if os.path.exists(LOGO_PATH):
+if LOGO_PATH.exists():
     logo_img = Image.open(LOGO_PATH)
     w, h = logo_img.size
     base_w = 140
@@ -54,15 +55,14 @@ if os.path.exists(LOGO_PATH):
 # --- Message ---
 msg = (
     "Pour garantir le bon fonctionnement de Velocio T&S,\n"
-    "merci de laisser cette boîte ouverte (elle restera en arrière-plan).\n\n"
-    "Le bouton \"Fermer Velocio T&S\" ou la croix clorurera proprement l'appication\n\n"
-    
+    "merci de laisser cette boîte ouverte (elle restera en arrière-plan).\n"
+    "Le bouton \"Fermer Velocio T&S\" ou la croix fermera proprement l'application.\n"
     "Cliquez sur \"Continuer\" pour ouvrir l'application dans votre navigateur."
 )
 label = ttk.Label(main_frame, text=msg, wraplength=370, justify="left", font=("Arial", 11))
 label.pack(pady=8)
 
-# --- Boutons colorés ---
+# --- Boutons ---
 btn_frame = ttk.Frame(main_frame)
 btn_frame.pack(pady=20)
 

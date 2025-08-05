@@ -1,21 +1,44 @@
 from shapely.geometry import LineString, Point
+from geopy.distance import distance as geopy_distance
 
 def trace_to_linestring(points):
-    # points est une liste de (lat, lon)
+    """
+    Convertit une liste de points (lat, lon) en une LineString Shapely.
+    Shapely travaille en (x, y) → (lon, lat)
+    """
     return LineString([(lon, lat) for lat, lon in points])
+
 
 def is_poi_near_trace(poi_lat, poi_lon, trace_line, max_distance_m=100):
     """
-    Teste si le POI est proche de la trace (distance orthogonale ou aux extrémités).
+    Détermine si un POI est proche de la trace (en mètres), en tenant compte
+    de la distance perpendiculaire à la trace et des extrémités (début/fin).
+    
+    Args:
+        poi_lat (float): Latitude du POI
+        poi_lon (float): Longitude du POI
+        trace_line (LineString): La trace sous forme de ligne (Shapely)
+        max_distance_m (int): Distance maximale en mètres
+
+    Returns:
+        bool: True si le POI est à moins de max_distance_m de la trace
     """
     poi_point = Point(poi_lon, poi_lat)
-    # Distance au segment le plus proche de la trace
-    distance_deg = poi_point.distance(trace_line)
-    distance_m = distance_deg * 111000
-    # Distance aux extrémités (début et fin)
-    start = Point(trace_line.coords[0])
-    end = Point(trace_line.coords[-1])
-    dist_start = poi_point.distance(start) * 111000
-    dist_end = poi_point.distance(end) * 111000
-    # On garde le POI si l'une des distances est inférieure au rayon
-    return min(distance_m, dist_start, dist_end) <= max_distance_m
+
+    # 1. Distance au segment le plus proche de la trace (distance orthogonale)
+    nearest_point_on_trace = trace_line.interpolate(trace_line.project(poi_point))
+    lon_near, lat_near = nearest_point_on_trace.x, nearest_point_on_trace.y  # ← CORRIGÉ ICI
+    dist_to_line = geopy_distance((poi_lat, poi_lon), (lat_near, lon_near)).meters
+
+    # 2. Distance au point de départ de la trace
+    start_lon, start_lat = trace_line.coords[0]
+    dist_to_start = geopy_distance((poi_lat, poi_lon), (start_lat, start_lon)).meters
+
+    # 3. Distance au point d'arrivée de la trace
+    end_lon, end_lat = trace_line.coords[-1]
+    dist_to_end = geopy_distance((poi_lat, poi_lon), (end_lat, end_lon)).meters
+
+    # On garde la plus petite des trois distances
+    min_distance = min(dist_to_line, dist_to_start, dist_to_end)
+
+    return min_distance <= max_distance_m

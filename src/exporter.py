@@ -4,19 +4,25 @@ from config import OUTPUT_DIR
 
 def export_gpx(trace, pois):
     """
-    Exporte un fichier GPX contenant la trace et les POI avec description comme étiquette.
+    Exporte un fichier GPX contenant la trace et les POI. 
+    Ajoute le namespace GPX pour compatibilité maximale.
     """
-    gpx = etree.Element("gpx", version="1.1", creator="Velocio_POI")
+    gpx = etree.Element(
+        "gpx",
+        version="1.1",
+        creator="Velocio_POI",
+        xmlns="http://www.topografix.com/GPX/1/1"
+    )
     # Ajout de la trace
     trk = etree.SubElement(gpx, "trk")
     trkseg = etree.SubElement(trk, "trkseg")
     for lat, lon in trace:
         etree.SubElement(trkseg, "trkpt", lat=str(lat), lon=str(lon))
-    # Ajout des POI (waypoints) avec description
+    # Ajout des POI (waypoints) avec nom
     for poi in pois:
         wpt = etree.SubElement(gpx, "wpt", lat=str(poi.get("lat", "")), lon=str(poi.get("lon", "")))
         name = etree.SubElement(wpt, "name")
-        name.text = poi.get("description", "")
+        name.text = poi.get("name") or poi.get("label") or ""
     # Sauvegarde
     path = OUTPUT_DIR / "resultats_poi.gpx"
     tree = etree.ElementTree(gpx)
