@@ -10,15 +10,24 @@ OUTPUT_DIR = USER_DATA_DIR / "output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 ALL_POI_TYPES = [
-    # 🍽️ Restaurants & Lieux pour manger
+    # 🍽️ Se restaurer
     {"key": "amenity", "value": "restaurant", "label": "Restaurant"},
-    {"key": "amenity", "value": "cafe", "label": "Café"},
     {"key": "amenity", "value": "fast_food", "label": "Fast-food"},
+
+    # Café et bars
+    {"key": "amenity", "value": "cafe", "label": "Café"},
     {"key": "amenity", "value": "pub", "label": "Pub"},
     {"key": "amenity", "value": "bar", "label": "Bar"},
 
-    # 🥖 Boulangerie (bonne pratique OSM)
+    # 🥖 boutiques alimentaires
     {"key": "shop", "value": "bakery", "label": "Boulangerie"},
+    {"key": "shop", "value": "convenience", "label": "Épicerie de quartier"},
+    {"key": "shop", "value": "supermarket", "label": "Supermarché"},
+    {"key": "shop", "value": "grocery", "label": "Épicerie"},
+    {"key": "shop", "value": "organic", "label": "Magasin bio"},
+    {"key": "shop", "value": "deli", "label": "Charcuterie / Traiteur"},
+    {"key": "shop", "value": "vegetarian", "label": "Magasin végétarien"},
+    {"key": "shop", "value": "health_food", "label": "Alimentation santé"},
 
     # 🏨 Hébergement
     {"key": "tourism", "value": "hotel", "label": "Hôtel"},
@@ -29,27 +38,21 @@ ALL_POI_TYPES = [
     {"key": "tourism", "value": "camp_site", "label": "Camping"},
     {"key": "tourism", "value": "caravan_site", "label": "Aire de camping-car"},
 
-    # 🚲 Services vélo
+    # 🚲 Services et vente de vélos
     {"key": "amenity", "value": "bicycle_repair_station", "label": "Réparation vélo"},
     {"key": "amenity", "value": "bicycle_parking", "label": "Stationnement vélo"},
+    {"key": "shop", "value": "bicycle", "label": "Magasin de vélos"},  # Vente, réparation, accessoires
 
     # ⚡ Autres équipements
-    {"key": "amenity", "value": "charging_station", "label": "Bornes de recharge"},
     {"key": "amenity", "value": "drinking_water", "label": "Eau potable"},
     {"key": "amenity", "value": "toilets", "label": "Toilettes"},
     {"key": "amenity", "value": "shelter", "label": "Abri"},
 
-    # 🌍 Tourisme
+    # 🌍 Tourisme et culture
     {"key": "tourism", "value": "museum", "label": "Musée"},
     {"key": "tourism", "value": "attraction", "label": "Attraction"},
     {"key": "tourism", "value": "viewpoint", "label": "Point de vue"},
     {"key": "tourism", "value": "picnic_site", "label": "Site pique-nique"},
-]
-OVERPASS_URLS = [
-    "https://overpass-api.de/api/interpreter",
-    "https://z.overpass-api.de/api/interpreter",
-    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter"
 ]
 
 USER_AGENT = f"{APP_NAME}_Tool/1.0"
