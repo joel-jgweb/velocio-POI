@@ -1,0 +1,105 @@
+<!-- src/splash.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bienvenue - Velocio Traces & Spots</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f7f7fa;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+            padding: 40px 36px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            width: 120px;
+            height: auto;
+        }
+        h1 {
+            color: #2352a0;
+            margin-bottom: 16px;
+        }
+        p {
+            color: #555;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .btn {
+            background: #2352a0;
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 24px;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(35,82,160,0.13);
+            transition: background 0.2s;
+        }
+        .btn:hover {
+            background: #14335e;
+        }
+        .wait-message {
+            margin-top: 20px;
+            padding: 12px;
+            background: #e3eafd;
+            border-radius: 8px;
+            color: #2352a0;
+            font-style: italic;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+ 
+        <h1>Velocio Traces & Spots</h1>
+        <h1>Bienvenue</h1>
+        <p>Cet outil vous permet de rechercher des points d’intérêt autour de votre trace GPX.</p>
+        <button id="startBtn" class="btn">Continuer</button>
+        <div id="waitMessage" class="wait-message">
+            Démarrage du serveur... redirection automatique dès que prêt.
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('startBtn').addEventListener('click', function() {
+            this.style.display = 'none';
+            document.getElementById('waitMessage').style.display = 'block';
+
+            // Demande le lancement du vrai serveur
+            fetch('/start-flask', { method: 'POST' })
+                .then(() => {
+                    // Vérifie régulièrement si le vrai serveur est prêt
+                    const checkReady = setInterval(() => {
+                        fetch('http://127.0.0.1:5000/ready', { method: 'GET', mode: 'no-cors' })
+                            .then(() => {
+                                clearInterval(checkReady);
+                                window.location.href = 'http://127.0.0.1:5000/';
+                            })
+                            .catch(() => {
+                                // En attente
+                            });
+                    }, 800);
+                })
+                .catch(err => {
+                    console.error("Échec du démarrage de Flask :", err);
+                    document.getElementById('waitMessage').textContent = "Erreur : impossible de démarrer le serveur.";
+                });
+        });
+    </script>
+</body>
+</html>
