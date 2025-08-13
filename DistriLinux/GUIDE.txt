@@ -1,0 +1,14 @@
+==========================================
+Velocio Traces & Spots - Installation Linux
+==========================================
+
+1. Ouvrez un terminal dans le dossier DistriLinux
+2. Tapez : chmod +x install.sh
+3. Lancez le script : ./install.sh
+
+L’application apparaîtra dans le menu (rubrique Autres) et un raccourci sera ajouté sur votre bureau.
+
+Exécutable : velocio_T&S
+Icône : icon.png
+
+Pour toute question ou bug : https://github.com/joel-jgweb/velocio-POI

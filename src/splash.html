@@ -1,4 +1,3 @@
-t<!-- src/splash.html -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -48,6 +47,7 @@ t<!-- src/splash.html -->
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(35,82,160,0.13);
             transition: background 0.2s;
+            margin: 0 8px;
         }
         .btn:hover {
             background: #14335e;
@@ -61,18 +61,79 @@ t<!-- src/splash.html -->
             font-style: italic;
             display: none;
         }
+        /* Styles pour la popup À propos */
+        #aboutModal {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            border: 1px solid #2352a0;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(35,82,160,0.13);
+            padding: 32px 28px;
+            z-index: 1000;
+            max-width: 370px;
+            width: 90%;
+            text-align: left;
+        }
+        #aboutModal h2 {
+            color: #2352a0;
+            margin-top: 0;
+            font-size: 1.3em;
+        }
+        #aboutModal p {
+            color: #444;
+            margin-bottom: 12px;
+        }
+        #closeAbout {
+            background: #2352a0;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 18px;
+            font-size: 1em;
+            cursor: pointer;
+            float: right;
+            margin-top: 16px;
+        }
+        #closeAbout:hover {
+            background: #14335e;
+        }
+        /* Fond semi-transparent lors de la popup */
+        #aboutBackdrop {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(35,82,160,0.10);
+            z-index: 999;
+        }
     </style>
 </head>
 <body>
     <div class="container">
- 
         <h1>Velocio Traces & Spots</h1>
         <h1>Bienvenue</h1>
         <p>Cet outil vous permet de rechercher des points d’intérêt autour de votre trace GPX.</p>
         <button id="startBtn" class="btn">Continuer</button>
+        <button id="aboutBtn" class="btn" type="button">À propos</button>
         <div id="waitMessage" class="wait-message">
             Démarrage du serveur... redirection automatique dès qu'il est prêt.
         </div>
+    </div>
+
+    <!-- Fond semi-transparent pour la popup -->
+    <div id="aboutBackdrop"></div>
+    <!-- Popup À propos -->
+    <div id="aboutModal">
+        <h2>À propos de Velocio Traces & Spots</h2>
+        <p><strong>Version :</strong> 1.0.0</p>
+        <p><strong>Description :</strong><br>
+        Application pour visualiser et rechercher des points d'intérêt autour d'une trace GPX directement dans votre navigateur. Outil dédié au cyclotourisme et à la découverte locale.</p>
+        <p><strong>Auteur :</strong> joel-jgweb</p>
+        <p><a href="https://github.com/joel-jgweb/velocio-POI" target="_blank">Voir le projet sur GitHub</a></p>
+        <button id="closeAbout">Fermer</button>
     </div>
 
     <script>
@@ -100,6 +161,20 @@ t<!-- src/splash.html -->
                     document.getElementById('waitMessage').textContent = "Erreur : impossible de démarrer le serveur.";
                 });
         });
+
+        // Gestion de la popup À propos
+        document.getElementById('aboutBtn').onclick = function() {
+            document.getElementById('aboutModal').style.display = 'block';
+            document.getElementById('aboutBackdrop').style.display = 'block';
+        };
+        document.getElementById('closeAbout').onclick = function() {
+            document.getElementById('aboutModal').style.display = 'none';
+            document.getElementById('aboutBackdrop').style.display = 'none';
+        };
+        document.getElementById('aboutBackdrop').onclick = function() {
+            document.getElementById('aboutModal').style.display = 'none';
+            document.getElementById('aboutBackdrop').style.display = 'none';
+        };
     </script>
 </body>
 </html>

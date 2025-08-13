@@ -1,89 +1,34 @@
 #!/bin/bash
-echo "🚀 Compilation de Velocio-POI en exécutable Linux..."
-PROJECT_DIR="$(dirname "$0")"
-SRC_DIR="$PROJECT_DIR/src"
-DIST_DIR="$PROJECT_DIR/dist"
-BUILD_DIR="$PROJECT_DIR/build"
-SPEC_FILE="$PROJECT_DIR/velocio-poi.spec"
 
-# Vérifications
-[ ! -f "$SRC_DIR/splash.html" ] && echo "❌ Erreur : splash.html introuvable" && exit 1
-[ ! -f "$SRC_DIR/server.py" ] && echo "❌ Erreur : server.py introuvable" && exit 1
+# 1. Crée le dossier compilLinux et le venv
+COMPIL_DIR="../compilLinux"
+VENV_DIR="$COMPIL_DIR/venv"
+REQUIREMENTS="requirements.txt"
 
-# Nettoyage
-echo "🧹 Nettoyage des anciens builds..."
-rm -rf "$BUILD_DIR" "$DIST_DIR" "$SPEC_FILE"
+echo "🛠️ Création du dossier $COMPIL_DIR et de l'environnement virtuel..."
+mkdir -p "$COMPIL_DIR"
+python3 -m venv "$VENV_DIR"
 
-# Génération du .spec
-cat > "$SPEC_FILE" << 'EOF'
-a = Analysis(
-    ['src/start.py'],
-    pathex=[],
-    binaries=[],
-    datas=[
-        ('src/templates', 'templates'),
-        ('src/static', 'static'),
-        ('src/splash.html', '.'),
-        ('src/uploads', 'uploads'),
-    ],
-    hiddenimports=[
-        'flask',
-        'gpxpy',
-        'shapely',
-        'folium',
-        'requests',
-        'lxml',
-        'geopy',
-        'markupsafe',
-        'jinja2',
-        'click',
-        'itsdangerous',
-        'werkzeug.serving',
-        'server',
-        'cache',
-        'overpass',
-        'poi',
-        'enrich',
-        'gpx_utils',
-        'exporter',
-        'map',
-        'config'
-    ],
-    hookspath=[],
-    hooksconfig={},
-    runtime_hooks=[],
-    excludes=[],
-    cipher=None,
-    noarchive=False,
-)
-pyz = PYZ(a.pure, a.zipped_data)
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    [],
-    name='velocio-poi',
-    debug=False,
-    bootloader_ignore_signals=False,
-    strip=False,
-    upx=True,
-    console=False,  # <--- CONSOLE DÉSACTIVÉE
-)
-EOF
+# 2. Active le venv
+source "$VENV_DIR/bin/activate"
 
-# Lancement
-echo "📦 Lancement de PyInstaller..."
-# --noconsole = pas de fenêtre terminal
-pyinstaller --clean --noconsole "$SPEC_FILE"
-
-# Fin
-if [ $? -eq 0 ]; then
-    echo "✅ Succès ! Lance : ./dist/velocio-poi/velocio-poi"
+# 3. Installe les dépendances du projet (si requirements.txt présent)
+if [ -f "$REQUIREMENTS" ]; then
+    pip install --upgrade pip
+    pip install -r "$REQUIREMENTS"
 else
-    echo "❌ Échec"
-    exit 1
+    echo "⚠️  Pas de requirements.txt trouvé. Installe manuellement les dépendances."
 fi
 
-chmod +x dist/velocio-poi/velocio-poi 2>/dev/null || true
+# 4. Installe PyInstaller
+pip install pyinstaller
+
+# 5. Compile avec PyInstaller
+echo "🚀 Compilation avec PyInstaller (environnement compilLinux)..."
+pyinstaller --clean velocio-poi.spec
+
+# 6. Désactive le venv
+deactivate
+
+echo "✅ Compilation terminée."
+echo "Les fichiers générés sont dans dist/"
