@@ -65,3 +65,6 @@ Velocio_T&S_Installer.exe
 src/output/
 src/output/
 src/carte.html
+
+# Distri linux
+./DistriLinux
