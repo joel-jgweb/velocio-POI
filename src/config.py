@@ -57,3 +57,12 @@ ALL_POI_TYPES = [
 ]
 
 USER_AGENT = f"{APP_NAME}_Tool/1.0"
+
+# Liste des serveurs Overpass à tester dans l'ordre (ajouté ici)
+OVERPASS_API_URLS = [
+    "https://overpass.kumi.systems/api/interpreter",
+    "https://overpass-api.de/api/interpreter",
+    "https://lz4.overpass-api.de/api/interpreter",
+    "https://z.overpass-api.de/api/interpreter",
+    "https://overpass.openstreetmap.ru/api/interpreter"
+]

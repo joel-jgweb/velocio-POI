@@ -6,7 +6,7 @@ LAUNCHER="velocio_T&S.desktop"
 INSTALLDIR="/usr/local/bin"
 ICONDIR="$HOME/.local/share/icons"
 MENU_DIR="$HOME/.local/share/applications"
-# Détection automatique du dossier Bureau (compatible Cinnamon )
+# Détection automatique du dossier Bureau (compatible Cinnamon)
 DESKTOPDIR="$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Bureau")"
 
 echo "🔧 Installation de $APPNAME dans $INSTALLDIR"
