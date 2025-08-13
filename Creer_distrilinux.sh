@@ -11,7 +11,7 @@ INSTALL_SCRIPT="$OUT_DIR/install.sh"
 
 echo "🛠️ Création du dossier de distribution Linux..."
 
-# Conversion automatique de icon.ico en icon.png (si nécessaire)
+# Conversion automatique de icon.ico en icon.png (si nécessaire )
 if [ ! -f "$DST_ICON" ]; then
     if [ -f "$SRC_ICON" ]; then
         mkdir -p "$DIST_DIR"
