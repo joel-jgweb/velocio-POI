@@ -1,0 +1,67 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.pyd
+*.pyo
+
+# Environnements virtuels
+venv/
+.env/
+.envrc
+
+# Build et distribution
+build/
+dist/
+*.spec
+
+# Uploads temporaires
+uploads/
+output/
+.cache/
+.cache/
+*.log
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Dossiers générés par l'installation
+*.egg-info/
+.eggs/
+*.egg
+*.whl
+
+# Fichiers de configuration locaux
+*.sqlite3
+*.db
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichier d’installation ou binaire
+Velocio_T&S_Installer.exe
+
+# Idéalement, les exécutables doivent être distribués via GitHub Releases, pas versionnés dans le dépôt
+
+# Visual Studio Code
+.vscode/
+
+# MacOS
+*.DS_Store
+
+# Windows
+*.exe
+*.dll
+*.bat
+
+# Logs
+*.log
+
+# Carte générée
+src/output/
+src/output/
+src/carte.html
