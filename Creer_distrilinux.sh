@@ -55,16 +55,17 @@ else
 fi
 
 # Génération du script install.sh pour l'utilisateur final
-cat > "$INSTALL_SCRIPT" <<'EOF'
+cat > "$INSTALL_SCRIPT" <<EOF
 #!/bin/bash
 
 APPNAME="velocio_T&S"
 ICON="icon.png"
 LAUNCHER="velocio_T&S.desktop"
 INSTALLDIR="/usr/local/bin"
-DESKTOPDIR="$HOME/Bureau"
-ICONDIR="$HOME/.local/share/icons"
-MENU_DIR="$HOME/.local/share/applications"
+ICONDIR="\$HOME/.local/share/icons"
+MENU_DIR="\$HOME/.local/share/applications"
+# Détection automatique du dossier Bureau (compatible Cinnamon)
+DESKTOPDIR="\$(xdg-user-dir DESKTOP 2>/dev/null || echo "\$HOME/Bureau")"
 
 echo "🔧 Installation de \$APPNAME dans \$INSTALLDIR"
 sudo cp "\$APPNAME" "\$INSTALLDIR/"
@@ -75,6 +76,7 @@ mkdir -p "\$ICONDIR"
 cp "\$ICON" "\$ICONDIR/\$ICON"
 
 # Création du lanceur .desktop (menu + bureau)
+mkdir -p "\$MENU_DIR"
 cat > "\$MENU_DIR/\$LAUNCHER" <<EOL
 [Desktop Entry]
 Type=Application
@@ -87,6 +89,7 @@ EOL
 chmod +x "\$MENU_DIR/\$LAUNCHER"
 echo "✔️  Lanceur créé dans le menu (Autres)"
 
+mkdir -p "\$DESKTOPDIR"
 cp "\$MENU_DIR/\$LAUNCHER" "\$DESKTOPDIR/\$LAUNCHER"
 chmod +x "\$DESKTOPDIR/\$LAUNCHER"
 echo "✔️  Lanceur copié sur le bureau"
