@@ -1,4 +1,4 @@
-# Velocio Traces & Spots (Velocio-POI)
+# Velocio Traces & Spots (Velocio-POI) V1.0.1 
 
 Outil Python pour rechercher et afficher des Points d’Intérêt (POI) autour d’une trace GPX, basé sur OpenStreetMap et Overpass API.
 
@@ -34,11 +34,15 @@ Outil Python pour rechercher et afficher des Points d’Intérêt (POI) autour d
     - Double-cliquez pour installer et utiliser le logiciel sans Python.
 
 ## Compilation
-
 - **Windows :**  
     Lancez `build.bat` (Python requis)
 - **Linux :**  
     Lancez `build.sh` (Python requis)
+
+## Fonctionnalités avancées
+- Cache intelligent des POI (24h)
+- Réutilisation des adresses entre traces
+- Respect des CGU OpenStreetMap
 
 ## Téléchargement
 

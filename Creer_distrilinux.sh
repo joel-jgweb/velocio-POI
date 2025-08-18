@@ -2,7 +2,7 @@
 
 DIST_DIR="dist"
 OUT_DIR="DistriLinux"
-EXECUTABLE="velocio_T&S"
+EXECUTABLE="velocio_T&S_V1.0.1"
 ICON="icon.png"
 README="GUIDE.txt"
 SRC_ICON="src/static/icon.ico"
@@ -58,9 +58,9 @@ fi
 cat > "$INSTALL_SCRIPT" <<EOF
 #!/bin/bash
 
-APPNAME="velocio_T&S"
+APPNAME="velocio_T&S_V1.0.1"
 ICON="icon.png"
-LAUNCHER="velocio_T&S.desktop"
+LAUNCHER="velocio_T&S_V1.0.1.desktop"
 INSTALLDIR="/usr/local/bin"
 ICONDIR="\$HOME/.local/share/icons"
 MENU_DIR="\$HOME/.local/share/applications"
@@ -114,7 +114,7 @@ Velocio Traces & Spots - Installation Linux
 
 L’application apparaîtra dans le menu (rubrique Autres) et un raccourci sera ajouté sur votre bureau.
 
-Exécutable : velocio_T&S
+Exécutable : velocio_T&S_V1.0.1
 Icône : icon.png
 
 Pour toute question ou bug : https://github.com/joel-jgweb/velocio-POI

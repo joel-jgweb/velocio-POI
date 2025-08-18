@@ -1,34 +1,28 @@
-# src/server.py - Version modifiée : pas de lancement automatique
-
+# src/server.py - Velocio Traces & Spots
+# Version améliorée : progression fine avec nom du POI pendant la géocodification
 import time
 import threading
 import os
+import requests
 from flask import Flask, render_template, request, redirect, url_for, send_file, jsonify, abort
-from config import ALL_POI_TYPES, OUTPUT_DIR
-from gpx_utils import parse_gpx
+from config import ALL_POI_TYPES, USER_AGENT, OUTPUT_DIR
+from gpx_utils import parse_gpx, split_trace_by_distance
 from overpass import build_query, query_overpass
 from poi import trace_to_linestring, is_poi_near_trace, deduplicate_pois
-from enrich import enrich_poi_address
 from exporter import export_csv, export_gpx
 from map import generate_map
 from cache import load_cache, save_cache
 from collections import defaultdict
 
-# === Création de l'application Flask ===
 app = Flask(__name__)
 app.secret_key = "velocio_poi_temp_key_2025"
-
-# === Configuration du dossier d'upload ===
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "uploads")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# === Variables globales pour le traitement ===
 global_trace = []
 global_pois = []
 global_progress = {"progress": 0, "status": "Prêt", "done": False}
-
-# === Gestion de l'inactivité ===
 last_activity = time.time()
 INACTIVITY_TIMEOUT = 300  # 5 minutes
 
@@ -77,6 +71,7 @@ def upload():
     radius = int(request.args.get("radius", "200"))
     selected_tags = [ALL_POI_TYPES[int(i)] for i in tags.split(",") if i.isdigit()]
     selected_labels = [t["label"] for t in selected_tags]
+
     if request.method == "POST":
         if "gpxfile" not in request.files:
             return "Aucun fichier sélectionné", 400
@@ -93,58 +88,145 @@ def upload():
                 points = parse_gpx(file_path)
                 global_trace = points
                 total_points = len(points)
-                global_progress.update({"status": f"Découpage de votre parcours en {total_points} sections", "progress": 10})
+                global_progress.update({"status": f"Découpage du parcours en segments de 20km...", "progress": 10})
                 time.sleep(0.3)
-                lats = [p[0] for p in points]
-                lons = [p[1] for p in points]
-                radius_deg = radius / 111000
-                bbox = [
-                    min(lats) - radius_deg,
-                    min(lons) - radius_deg,
-                    max(lats) + radius_deg,
-                    max(lons) + radius_deg
-                ]
-                global_progress.update({"status": "Requête à OpenStreetMap..."})
-                query = build_query(selected_tags, bbox)
-                data = query_overpass(query)
-                global_progress["progress"] = 30
+
+                segment_km = 20
+                segments = split_trace_by_distance(points, segment_km=segment_km)
+                num_segments = len(segments)
+                global_progress.update({"status": f"{num_segments} segments à traiter (20km chacun)", "progress": 12})
+
                 trace_line = trace_to_linestring(points)
                 pois = []
-                elements = data.get("elements", [])
-                total_elements = len(elements)
-                for idx, element in enumerate(elements):
-                    if element['type'] in ['node', 'way', 'relation']:
-                        lat = element.get('lat') or (element.get('center', {}) or {}).get('lat')
-                        lon = element.get('lon') or (element.get('center', {}) or {}).get('lon')
-                        if lat is None or lon is None:
-                            continue
-                        tags_elem = element.get('tags', {})
-                        label = next(
-                            (t["label"] for t in ALL_POI_TYPES
-                             if t["key"] in tags_elem and t["value"] == tags_elem.get(t["key"])),
-                            "POI"
-                        )
-                        if is_poi_near_trace(lat, lon, trace_line, radius):
-                            pois.append({
-                                "lat": lat,
-                                "lon": lon,
-                                "name": tags_elem.get("name", ""),
-                                "type": element["type"],
-                                "label": label
-                            })
-                    global_progress.update({
-                        "progress": 30 + int(30 * idx / max(total_elements, 1)),
-                        "status": f"Requête OSM pour la section {idx+1}/{total_elements}"
-                    })
+
+                # === 🔍 Recherche des POI par segment et par type ===
+                for tag_idx, tag in enumerate(selected_tags):
+                    import hashlib
+                    with open(file_path, 'rb') as f:
+                        gpx_hash = hashlib.md5(f.read()).hexdigest()
+                    tag_pois = []
+
+                    for seg_idx, seg in enumerate(segments):
+                        seg_lats = [p[0] for p in seg]
+                        seg_lons = [p[1] for p in seg]
+                        radius_deg = radius / 111000
+                        bbox = [
+                            min(seg_lats) - radius_deg,
+                            min(seg_lons) - radius_deg,
+                            max(seg_lats) + radius_deg,
+                            max(seg_lons) + radius_deg
+                        ]
+
+                        cache_key = f"gpx:{gpx_hash}|radius:{radius}|tag:{tag['key']}={tag['value']}|seg:{seg_idx}"
+                        cached = load_cache(cache_key)
+
+                        if cached is not None:
+                            print(f"✅ Cache trouvé pour segment {seg_idx} tag {tag['label']}")
+                            tag_pois.extend(cached)
+                        else:
+                            query = build_query([tag], bbox)
+                            data = query_overpass(query)
+                            elements = data.get("elements", [])
+                            seg_pois = []
+
+                            for element in elements:
+                                lat = element.get('lat') or (element.get('center', {}) or {}).get('lat')
+                                lon = element.get('lon') or (element.get('center', {}) or {}).get('lon')
+                                if lat is None or lon is None:
+                                    continue
+                                if is_poi_near_trace(lat, lon, trace_line, radius):
+                                    seg_pois.append({
+                                        "lat": lat,
+                                        "lon": lon,
+                                        "name": element.get('tags', {}).get("name", ""),
+                                        "type": element["type"],
+                                        "label": tag["label"],
+                                        "category": tag["category"]  # ✅ Ajout de la catégorie
+                                    })
+
+                            save_cache(cache_key, seg_pois)
+                            tag_pois.extend(seg_pois)
+
+                        prog_base = 12 + int(60 * (tag_idx / max(1, len(selected_tags))))
+                        prog = prog_base + int(20 * (seg_idx / max(1, num_segments)))
+                        global_progress.update({
+                            "progress": min(prog, 80),
+                            "status": f"Requête OSM pour {tag['label']} (segment {seg_idx+1}/{num_segments})"
+                        })
+
+                    pois.extend(tag_pois)
+
+                # === 🧹 Dédoublonnage des POI ===
+                print(f"🔍 Avant dédoublonnage : {len(pois)} POI")
                 pois = deduplicate_pois(pois, merge_distance_m=10)
-                global_progress.update({"status": "Recherche des adresses postales...", "progress": 65})
-                pois = enrich_poi_address(pois)
-                global_progress.update({"status": "Traitement des données...", "progress": 80})
+                print(f"✅ Après dédoublonnage : {len(pois)} POI")
+                total_pois = len(pois)
+
+                # === 📍 Recherche des adresses avec progression détaillée ===
+                if total_pois > 0:
+                    global_progress.update({"status": "Recherche des adresses (0/0)...", "progress": 85})
+                    for idx, poi in enumerate(pois):
+                        name_display = poi.get("name") or "Sans nom"
+                        label_display = poi.get("label", "POI")
+                        status_text = f"{idx + 1}/{total_pois} - {name_display} ({label_display})"
+
+                        lat_round = round(poi['lat'], 5)
+                        lon_round = round(poi['lon'], 5)
+                        cache_key = f"reverse:{lat_round},{lon_round}"
+                        cached = load_cache(cache_key)
+
+                        if cached is not None:
+                            addr = cached
+                        else:
+                            try:
+                                response = requests.get(
+                                    "https://nominatim.openstreetmap.org/reverse",
+                                    params={
+                                        'lat': poi['lat'],
+                                        'lon': poi['lon'],
+                                        'format': 'json',
+                                        'accept-language': 'fr'
+                                    },
+                                    headers={'User-Agent': USER_AGENT},
+                                    timeout=5
+                                )
+                                if response.status_code == 200:
+                                    addr = response.json().get('address', {})
+                                    save_cache(cache_key, addr)
+                                else:
+                                    addr = {}
+                            except Exception as e:
+                                print(f"❌ Erreur Nominatim pour {name_display} : {e}")
+                                addr = {}
+                            time.sleep(1)  # Respect des CGU
+
+                        poi['address'] = (
+                            addr.get('road') or addr.get('pedestrian') or
+                            addr.get('residential') or addr.get('footway') or "Inconnue"
+                        )
+                        poi['city'] = (
+                            addr.get('city') or addr.get('town') or
+                            addr.get('village') or addr.get('hamlet') or 'Inconnue'
+                        )
+                        poi['description'] = f"{label_display}: {name_display} - {poi['address']}, {poi['city']}"
+
+                        # Mise à jour de la progression
+                        progress_percent = 85 + int(10 * (idx + 1) / total_pois)
+                        global_progress.update({
+                            "progress": progress_percent,
+                            "status": status_text
+                        })
+                else:
+                    global_progress.update({"status": "Aucun POI à géocoder", "progress": 85})
+
+                # === 📤 Génération des résultats ===
+                global_progress.update({"status": "Génération des résultats...", "progress": 95})
                 export_csv(pois)
                 generate_map(points, pois)
                 export_gpx(points, pois)
                 global_pois = pois
                 global_progress.update({"progress": 100, "status": "Terminé !", "done": True})
+
             except Exception as e:
                 global_progress.update({"status": f"Erreur : {str(e)}", "done": True})
 
@@ -192,7 +274,4 @@ def map_html():
 @app.route("/shutdown")
 def shutdown():
     print("[Arrêt demandé via /shutdown]")
-    os._exit(0)  # arrêt brutal
-
-# === Supprimé : le bloc if __name__ == "__main__" ===
-# Cela permet à start.py d'être l'unique point d'entrée
+    os._exit(0)
